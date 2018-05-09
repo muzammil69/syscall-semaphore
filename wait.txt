@@ -1,0 +1,14 @@
+#include <linux/kernel.h>
+#include <linux/syscalls.h>
+#include <asm/unistd.h>
+asmlinkage long sys_wait(int s)
+{
+         static int n=1;
+	 printk("Thread %d entering wait.\n",n);
+         n=n+1;
+	 printk("Busy wait. \n");
+         s=s-1;	
+
+   
+return s;
+}

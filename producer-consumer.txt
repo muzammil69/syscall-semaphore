@@ -1,0 +1,86 @@
+#include <linux/unistd.h>
+#include <sys/syscall.h>
+#include <stdio.h>
+#include <linux/kernel.h>
+#include <sys/types.h>
+#define __NR_wait 354
+#define __NR_post 355
+const int n=5;
+
+char p[10] = "Producer:";
+char c[10] = "Consumer:";
+int count = 1;
+int count1 =1;
+int mutex=1; //binary semaphore.
+int full = 0; //counting semaphore.
+int empty = 5; //counting semaphore.
+long int signal;
+long int wait=0;
+
+void producer(){
+printf("%s\n",p);
+if(empty!=0 && empty > 0){
+
+while(empty!=0 && empty > 0){
+wait = syscall(354, empty);
+empty=wait;
+wait = syscall(354, mutex);
+mutex=wait;
+printf("producer %d added to the buffer\n", count);
+count++;
+sleep(1);
+signal = syscall(355, mutex);
+mutex=signal;
+signal = syscall(355, full);
+full=signal;
+}
+}
+else
+printf("ERROR Full buffer.\n");
+}
+
+void consumer()
+{
+printf("%s\n",c);
+if(full!=0 && full > 0){
+while(full!=0 && full > 0)
+{
+wait = syscall(354, full);
+full=wait;
+wait = syscall(354, mutex);
+mutex=wait;
+printf("Item %d removed from the buffer\n",count1);
+count1++;
+sleep(1);
+signal = syscall(355, mutex);
+mutex= signal;
+signal = syscall(355, empty);
+empty= signal;
+
+}
+}
+else
+printf("ERROR Empty buffer.\n");
+}
+
+int main()
+{
+consumer();
+producer();
+producer();
+consumer();
+producer();
+consumer();
+producer();
+consumer();
+producer();
+producer();
+consumer();
+producer();
+
+producer();
+consumer();
+producer();
+
+return 0;
+}
